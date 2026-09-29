@@ -1,0 +1,9 @@
+Static inner class
+Static variable of outer class is 10
+Static inner class
+Static variable of outer class is 10
+Non-Static inner classOuterclass
+Non-Static inner class10
+Method local inner class10
+Method local inner class20
+Anonymous inner class

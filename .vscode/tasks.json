@@ -1,0 +1,15 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Run Java",
+            "type": "shell",
+            "command": "FILE=\"${file}\"; CLASS=$(basename \"$FILE\" .java); PACKAGE=$(sed -n 's/^[[:space:]]*package[[:space:]]*\\([^;]*\\);.*/\\1/p' \"$FILE\" | head -1); mkdir -p \"${workspaceFolder}/.java_classes\"; { javac -d \"${workspaceFolder}/.java_classes\" \"$FILE\" && if [ -n \"$PACKAGE\" ]; then java -cp \"${workspaceFolder}/.java_classes\" \"$PACKAGE.$CLASS\" < \"${workspaceFolder}/input.txt\"; else java -cp \"${workspaceFolder}/.java_classes\" \"$CLASS\" < \"${workspaceFolder}/input.txt\"; fi; } > \"${workspaceFolder}/output.txt\" 2>&1",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}
