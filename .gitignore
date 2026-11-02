@@ -1,3 +1,6 @@
 # Compiled Java Files 
 java_classes/
 *.class
+
+# .Vscode file
+.vscode/settings.json

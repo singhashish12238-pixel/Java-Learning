@@ -1,15 +1,32 @@
+
 {
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Run Java",
-            "type": "shell",
-            "command": "FILE=\"${file}\"; CLASS=$(basename \"$FILE\" .java); PACKAGE=$(sed -n 's/^[[:space:]]*package[[:space:]]*\\([^;]*\\);.*/\\1/p' \"$FILE\" | head -1); mkdir -p \"${workspaceFolder}/.java_classes\"; { javac -d \"${workspaceFolder}/.java_classes\" \"$FILE\" && if [ -n \"$PACKAGE\" ]; then java -cp \"${workspaceFolder}/.java_classes\" \"$PACKAGE.$CLASS\" < \"${workspaceFolder}/input.txt\"; else java -cp \"${workspaceFolder}/.java_classes\" \"$CLASS\" < \"${workspaceFolder}/input.txt\"; fi; } > \"${workspaceFolder}/output.txt\" 2>&1",
-            "problemMatcher": [],
+            "label": "Compile and run active Java file",
+            "type": "process",
+            "command": "powershell.exe",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-Command",
+                "$ErrorActionPreference = 'Stop'; $jdk = 'C:\\Program Files\\Java\\jdk-25.0.5.0.3'; $root = '${workspaceFolder}'; $file = '${file}'; $classes = Join-Path $root '.java_classes'; $input = Join-Path $root 'input.txt'; $output = Join-Path $root 'output.txt'; New-Item -ItemType Directory -Force -Path $classes | Out-Null; & (Join-Path $jdk 'bin\\javac.exe') -d $classes -sourcepath $root $file; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; $package = Select-String -Path $file -Pattern '^\\s*package\\s+([^;]+);' | Select-Object -First 1; $mainClass = if ($package) { $package.Matches.Groups[1].Value + '.' + [IO.Path]::GetFileNameWithoutExtension($file) } else { [IO.Path]::GetFileNameWithoutExtension($file) }; $psi = New-Object System.Diagnostics.ProcessStartInfo; $psi.FileName = Join-Path $jdk 'bin\\java.exe'; $psi.Arguments = '-Dfile.encoding=UTF-8 -cp \"' + $classes + '\" ' + $mainClass; $psi.WorkingDirectory = $root; $psi.UseShellExecute = $false; $psi.RedirectStandardInput = $true; $psi.RedirectStandardOutput = $true; $psi.RedirectStandardError = $true; $psi.StandardOutputEncoding = [System.Text.Encoding]::UTF8; $psi.StandardErrorEncoding = [System.Text.Encoding]::UTF8; $p = New-Object System.Diagnostics.Process; $p.StartInfo = $psi; [void]$p.Start(); $stdoutTask = $p.StandardOutput.ReadToEndAsync(); $stderrTask = $p.StandardError.ReadToEndAsync(); $inputText = [IO.File]::ReadAllText($input); $p.StandardInput.Write($inputText); $p.StandardInput.Close(); $p.WaitForExit(); $stdout = $stdoutTask.Result; $stderr = $stderrTask.Result; [IO.File]::WriteAllText($output, $stdout, (New-Object System.Text.UTF8Encoding($false))); if ($stderr) { Write-Host $stderr }; exit $p.ExitCode"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
             "group": {
                 "kind": "build",
                 "isDefault": true
-            }
+            },
+            "presentation": {
+                "reveal": "always",
+                "focus": false
+            },
+            "problemMatcher": [
+                "$javac"
+            ]
         }
     ]
 }
